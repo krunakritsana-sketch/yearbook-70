@@ -1,200 +1,139 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#1e3a8a">
-  <meta name="format-detection" content="telephone=no">
-  <title>ระบบบันทึกข้อมูลหนังสือรุ่น</title>
-  <meta name="description" content="ระบบบันทึกข้อมูลหนังสือรุ่น">
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบันทึกข้อมูลหนังสือรุ่น หลักสูตรพันจ่านักเรียน70</title>
+    <link rel="icon" type="image/png" href="https://s.imgz.io/2026/10/09/-1716910a5e2e76f8dc.th.png
+">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Sarabun Font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+        /* Style for the iframe to ensure it covers the full viewport */
+        #mainIframe {
+            width: 100%;
+            height: 100vh;
+            display: block; /* Ensures no extra space around it */
+        }
+    </style>
 
-  <!-- Open Graph: ใช้แสดงตัวอย่างลิงก์ (ชื่อ คำอธิบาย รูป) เวลาแชร์ใน LINE / Facebook / Messenger -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="ระบบบันทึกข้อมูลหนังสือรุ่น">
-  <meta property="og:description" content="กรอกและบันทึกข้อมูลหนังสือรุ่นออนไลน์">
-  <meta property="og:image" content="https://lh3.googleusercontent.com/d/13Kk0wvBfxswRnX_RPjKKUdhNOOUco4bi">
-  <meta property="og:url" content="https://YOUR-DOMAIN/">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // URL of your Google Apps Script web app
+            const web_app_url = 'https://script.google.com/macros/s/AKfycbyJKtOFlZF3Uxx7cEIhTWvNdcCHNVs0shwvKtoxywI58JY12XN16OISVQEmyltKNr4/exec';
+            
+            // Function to check for In-App Browser, while excluding Google Chrome
+            function is_InAppBrowser() {
+                const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                const isChrome = /Chrome/.test(userAgent);
+                
+                // Check for common in-app browser user agents, excluding Chrome
+                return (
+                    !isChrome && 
+                    /FBAV|FBAN|LINE|Tiktok|Instagram|Twitter|Snapchat|Telegram|MicroMessenger|Pinterest|Reddit|Threads/i.test(userAgent)
+                );
+            }
 
-  <link rel="preconnect" href="https://script.google.com">
-  <link rel="preconnect" href="https://script.googleusercontent.com">
+            // Get the main iframe element
+            const mainIframe = document.getElementById('mainIframe');
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // If the URL already has the 'openExternalBrowser' parameter, we assume it's opened in a main browser
+            if (urlParams.has('openExternalBrowser')) {
+                mainIframe.src = web_app_url;
+                return;
+            }
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
+            // Check if it's an In-App Browser and if so, show the modal
+            if (is_InAppBrowser()) {
+                const modal = document.getElementById('inAppBrowserModal');
+                const confirmButton = document.getElementById('confirmButton');
+                const copyLinkButton = document.getElementById('copyLinkButton');
+                const copyMessage = document.getElementById('copyMessage');
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;            /* ไม่ให้มี scrollbar ที่หน้าห่อ */
-      background: #ffffff;
-      -webkit-text-size-adjust: 100%;
-    }
+                const urlToRedirect = new URL(window.location.href);
+                urlToRedirect.searchParams.set('openExternalBrowser', '1');
 
-    /* กรอบเต็มจอ: ใช้ 100dvh และมี 100vh สำรองไว้ให้เบราว์เซอร์รุ่นเก่า */
-    #wrap {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      width: 100%;
-      height: 100vh;
-      height: var(--app-height, 100dvh);
-      /* เว้นพื้นที่ notch / home indicator (คู่กับ viewport-fit=cover) */
-      padding: env(safe-area-inset-top) env(safe-area-inset-right)
-               env(safe-area-inset-bottom) env(safe-area-inset-left);
-      background: #ffffff;
-    }
+                // Show the modal and hide the iframe
+                modal.classList.remove('hidden');
+                mainIframe.style.display = 'none';
+                
+                confirmButton.addEventListener('click', () => {
+                    window.location.href = urlToRedirect.toString();
+                });
 
-    #app {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border: 0;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* ---------- Loading screen ---------- */
-    #loader {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      padding: 24px;
-      text-align: center;
-      color: #fff;
-      font-family: "Sarabun", "Noto Sans Thai", system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-      opacity: 1;
-      transition: opacity .5s ease, visibility .5s ease;
-    }
-    #loader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-
-    .spinner {
-      width: 52px; height: 52px;
-      border: 5px solid rgba(255,255,255,.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .9s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    #loader h1 { margin: 0; font-size: 1.35rem; font-weight: 600; }
-    #loader p  { margin: 0; font-size: .95rem; opacity: .9; }
-
-    #fallback { display: none; flex-direction: column; gap: 10px; margin-top: 8px; }
-    #fallback.show { display: flex; }
-    #fallback button, #fallback a {
-      font: inherit;
-      padding: 10px 20px;
-      border-radius: 999px;
-      border: 2px solid #fff;
-      background: transparent;
-      color: #fff;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    #fallback button { background: #fff; color: #1e3a8a; font-weight: 600; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .spinner { animation-duration: 2s; }
-      #loader { transition: none; }
-    }
-  </style>
+                copyLinkButton.addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(urlToRedirect.toString());
+                        copyMessage.textContent = 'คัดลอกแล้ว!';
+                        copyMessage.classList.remove('hidden');
+                        setTimeout(() => {
+                            copyMessage.classList.add('hidden');
+                        }, 2000);
+                    } catch (err) {
+                        copyMessage.textContent = 'ไม่สามารถคัดลอกได้!';
+                        copyMessage.classList.remove('hidden');
+                        console.error('Failed to copy text: ', err);
+                    }
+                });
+            } else {
+                // If it's not an In-App Browser, load the Apps Script URL directly into the iframe
+                mainIframe.src = web_app_url;
+            }
+        });
+    </script>
 </head>
 <body>
-
-  <div id="loader" role="status" aria-live="polite">
-    <div class="spinner" aria-hidden="true"></div>
-    <h1>ระบบบันทึกข้อมูลหนังสือรุ่น</h1>
-    <p id="loader-text">กำลังโหลด กรุณารอสักครู่...</p>
-
-    <div id="fallback">
-      <p>โหลดนานกว่าปกติ อาจเป็นเพราะสัญญาณอินเทอร์เน็ต</p>
-      <button type="button" id="btn-retry">ลองใหม่อีกครั้ง</button>
-      <a id="btn-open" href="#" target="_blank" rel="noopener">เปิดในเบราว์เซอร์</a>
+    <!-- Modal for In-App Browser warning -->
+    <div id="inAppBrowserModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-none sm:rounded-lg shadow-none sm:shadow-xl w-full h-full sm:max-w-sm sm:h-auto p-6 flex flex-col justify-between text-center">
+            <div>
+                <div class="flex flex-col items-center justify-center mb-6">
+                    <!-- Heart icon from Font Awesome -->
+                    <i class="fa-solid fa-heart text-red-500 text-5xl mb-4"></i>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">เปิดในเบราว์เซอร์หลัก</h2>
+                <p class="text-gray-600 mb-6 text-sm">เพื่อประสิทธิภาพสูงสุดในการใช้งาน กรุณาเปิดหน้าเว็บนี้ในเบราว์เซอร์หลัก (เช่น Chrome, Safari) ค่ะ</p>
+                
+                <div class="text-left text-sm text-gray-700 mt-4 space-y-2">
+                    <p><b>คำแนะนำ:</b></p>
+                    <p>• หากเปิดลิงก์นี้ด้วย Facebook และแอปพลิเคชันอื่นๆ: กรุณากดปุ่ม "คัดลอกลิงก์" เพื่อนำไปวางบนเบราว์เซอร์หลัก</p>
+                    <p>• หากเปิดผ่าน LINE: กดปุ่ม "เปิดเบราว์เซอร์" ได้เลยครับ</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-center mt-auto">
+                <div class="flex justify-center space-x-4 mb-4">
+                    <button id="confirmButton" class="px-6 py-2 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition-colors duration-200">
+                        เปิดเบราว์เซอร์
+                    </button>
+                    <button id="copyLinkButton" class="px-6 py-2 rounded-lg text-sm font-semibold text-gray-800 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 transition-colors duration-200">
+                        คัดลอกลิงก์
+                    </button>
+                </div>
+                <span id="copyMessage" class="text-green-600 text-sm font-medium hidden">คัดลอกแล้ว!</span>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div id="wrap">
-    <iframe
-      id="app"
-      title="ระบบบันทึกข้อมูลหนังสือรุ่น"
-      allow="fullscreen"
-      allowfullscreen
-      scrolling="auto"
-      loading="eager">
-    </iframe>
-  </div>
-
-  <script>
-    (function () {
-      'use strict';
-
-      var APP_URL = 'https://script.google.com/macros/s/AKfycbyJKtOFlZF3Uxx7cEIhTWvNdcCHNVs0shwvKtoxywI58JY12XN16OISVQEmyltKNr4/exec';
-      var TIMEOUT_MS = 20000; // ถ้าเกิน 20 วินาทียังโหลดไม่เสร็จ จะแสดงปุ่มสำรอง
-
-      var iframe   = document.getElementById('app');
-      var loader   = document.getElementById('loader');
-      var fallback = document.getElementById('fallback');
-      var text     = document.getElementById('loader-text');
-      var btnRetry = document.getElementById('btn-retry');
-      var btnOpen  = document.getElementById('btn-open');
-
-      // ส่ง query string ต่อไปให้ GAS เช่น yourdomain.com/?room=6-1 จะได้ e.parameter.room
-      var target = APP_URL + (location.search || '');
-
-      // ถ้าเปิดใน LINE ให้ปุ่มสำรองเด้งออกไปเปิดใน Chrome/Safari แทน
-      var ua = navigator.userAgent || '';
-      var isLine = /\bLine\//i.test(ua);
-      var directUrl = target + (isLine ? (target.indexOf('?') > -1 ? '&' : '?') + 'openExternalBrowser=1' : '');
-      btnOpen.href = directUrl;
-
-      // ใช้สำรองกรณีเบราว์เซอร์ไม่รองรับ dvh (in-app browser รุ่นเก่าบางตัว)
-      if (!(window.CSS && CSS.supports && CSS.supports('height', '100dvh'))) {
-        var setH = function () {
-          document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
-        };
-        setH();
-        window.addEventListener('resize', setH);
-        window.addEventListener('orientationchange', function () { setTimeout(setH, 300); });
-      }
-
-      var timer;
-      function hideLoader() {
-        clearTimeout(timer);
-        loader.classList.add('hide');
-      }
-
-      function load() {
-        loader.classList.remove('hide');
-        fallback.classList.remove('show');
-        text.textContent = 'กำลังโหลด กรุณารอสักครู่...';
-
-        clearTimeout(timer);
-        timer = setTimeout(function () {
-          text.textContent = 'ยังโหลดไม่เสร็จ';
-          fallback.classList.add('show');
-        }, TIMEOUT_MS);
-
-        iframe.src = target;
-      }
-
-      // ผูก onload ก่อนค่อยกำหนด src เพื่อไม่ให้พลาด event
-      iframe.addEventListener('load', function () {
-        if (iframe.src) hideLoader();
-      });
-
-      btnRetry.addEventListener('click', function () {
-        iframe.src = 'about:blank';
-        setTimeout(load, 50);
-      });
-
-      load();
-    })();
-  </script>
+    <!-- The iframe where the main content will be displayed -->
+    <iframe id="mainIframe" scrolling="yes" src="https://script.google.com/macros/s/AKfycbyJKtOFlZF3Uxx7cEIhTWvNdcCHNVs0shwvKtoxywI58JY12XN16OISVQEmyltKNr4/exec" frameborder="0"></iframe>
 </body>
 </html>
+
