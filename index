@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1e3a8a">
+  <meta name="format-detection" content="telephone=no">
+  <title>ระบบบันทึกข้อมูลหนังสือรุ่น</title>
+  <meta name="description" content="ระบบบันทึกข้อมูลหนังสือรุ่น">
+
+  <!-- Open Graph: ใช้แสดงตัวอย่างลิงก์ (ชื่อ คำอธิบาย รูป) เวลาแชร์ใน LINE / Facebook / Messenger -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ระบบบันทึกข้อมูลหนังสือรุ่น">
+  <meta property="og:description" content="กรอกและบันทึกข้อมูลหนังสือรุ่นออนไลน์">
+  <meta property="og:image" content="https://lh3.googleusercontent.com/d/13Kk0wvBfxswRnX_RPjKKUdhNOOUco4bi">
+  <meta property="og:url" content="https://YOUR-DOMAIN/">
+
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="preconnect" href="https://script.googleusercontent.com">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;            /* ไม่ให้มี scrollbar ที่หน้าห่อ */
+      background: #ffffff;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* กรอบเต็มจอ: ใช้ 100dvh และมี 100vh สำรองไว้ให้เบราว์เซอร์รุ่นเก่า */
+    #wrap {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      width: 100%;
+      height: 100vh;
+      height: var(--app-height, 100dvh);
+      /* เว้นพื้นที่ notch / home indicator (คู่กับ viewport-fit=cover) */
+      padding: env(safe-area-inset-top) env(safe-area-inset-right)
+               env(safe-area-inset-bottom) env(safe-area-inset-left);
+      background: #ffffff;
+    }
+
+    #app {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ---------- Loading screen ---------- */
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 24px;
+      text-align: center;
+      color: #fff;
+      font-family: "Sarabun", "Noto Sans Thai", system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      opacity: 1;
+      transition: opacity .5s ease, visibility .5s ease;
+    }
+    #loader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .spinner {
+      width: 52px; height: 52px;
+      border: 5px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loader h1 { margin: 0; font-size: 1.35rem; font-weight: 600; }
+    #loader p  { margin: 0; font-size: .95rem; opacity: .9; }
+
+    #fallback { display: none; flex-direction: column; gap: 10px; margin-top: 8px; }
+    #fallback.show { display: flex; }
+    #fallback button, #fallback a {
+      font: inherit;
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: 2px solid #fff;
+      background: transparent;
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    #fallback button { background: #fff; color: #1e3a8a; font-weight: 600; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation-duration: 2s; }
+      #loader { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loader" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <h1>ระบบบันทึกข้อมูลหนังสือรุ่น</h1>
+    <p id="loader-text">กำลังโหลด กรุณารอสักครู่...</p>
+
+    <div id="fallback">
+      <p>โหลดนานกว่าปกติ อาจเป็นเพราะสัญญาณอินเทอร์เน็ต</p>
+      <button type="button" id="btn-retry">ลองใหม่อีกครั้ง</button>
+      <a id="btn-open" href="#" target="_blank" rel="noopener">เปิดในเบราว์เซอร์</a>
+    </div>
+  </div>
+
+  <div id="wrap">
+    <iframe
+      id="app"
+      title="ระบบบันทึกข้อมูลหนังสือรุ่น"
+      allow="fullscreen"
+      allowfullscreen
+      scrolling="auto"
+      loading="eager">
+    </iframe>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var APP_URL = 'https://script.google.com/macros/s/AKfycbyJKtOFlZF3Uxx7cEIhTWvNdcCHNVs0shwvKtoxywI58JY12XN16OISVQEmyltKNr4/exec';
+      var TIMEOUT_MS = 20000; // ถ้าเกิน 20 วินาทียังโหลดไม่เสร็จ จะแสดงปุ่มสำรอง
+
+      var iframe   = document.getElementById('app');
+      var loader   = document.getElementById('loader');
+      var fallback = document.getElementById('fallback');
+      var text     = document.getElementById('loader-text');
+      var btnRetry = document.getElementById('btn-retry');
+      var btnOpen  = document.getElementById('btn-open');
+
+      // ส่ง query string ต่อไปให้ GAS เช่น yourdomain.com/?room=6-1 จะได้ e.parameter.room
+      var target = APP_URL + (location.search || '');
+
+      // ถ้าเปิดใน LINE ให้ปุ่มสำรองเด้งออกไปเปิดใน Chrome/Safari แทน
+      var ua = navigator.userAgent || '';
+      var isLine = /\bLine\//i.test(ua);
+      var directUrl = target + (isLine ? (target.indexOf('?') > -1 ? '&' : '?') + 'openExternalBrowser=1' : '');
+      btnOpen.href = directUrl;
+
+      // ใช้สำรองกรณีเบราว์เซอร์ไม่รองรับ dvh (in-app browser รุ่นเก่าบางตัว)
+      if (!(window.CSS && CSS.supports && CSS.supports('height', '100dvh'))) {
+        var setH = function () {
+          document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+        };
+        setH();
+        window.addEventListener('resize', setH);
+        window.addEventListener('orientationchange', function () { setTimeout(setH, 300); });
+      }
+
+      var timer;
+      function hideLoader() {
+        clearTimeout(timer);
+        loader.classList.add('hide');
+      }
+
+      function load() {
+        loader.classList.remove('hide');
+        fallback.classList.remove('show');
+        text.textContent = 'กำลังโหลด กรุณารอสักครู่...';
+
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          text.textContent = 'ยังโหลดไม่เสร็จ';
+          fallback.classList.add('show');
+        }, TIMEOUT_MS);
+
+        iframe.src = target;
+      }
+
+      // ผูก onload ก่อนค่อยกำหนด src เพื่อไม่ให้พลาด event
+      iframe.addEventListener('load', function () {
+        if (iframe.src) hideLoader();
+      });
+
+      btnRetry.addEventListener('click', function () {
+        iframe.src = 'about:blank';
+        setTimeout(load, 50);
+      });
+
+      load();
+    })();
+  </script>
+</body>
+</html>
