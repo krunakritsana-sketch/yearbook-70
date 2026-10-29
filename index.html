@@ -3,62 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b2a4a">
-  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1e3a8a">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="referrer" content="no-referrer-when-downgrade">
 
-  <title>ระบบบันทึกข้อมูลหนังสือรุ่น E-Book &quot;หลักสูตรพันจ่านักเรียน70&quot;</title>
-  <meta name="description" content="ระบบบันทึกข้อมูลหนังสือรุ่น E-Book หลักสูตรพันจ่านักเรียน รุ่นที่ 70">
+  <title>ระบบลงข้อมูลเพื่อจัดทำหนังสือรุ่น หลักสูตร พจน.70 พื้นที่พุทธมณฑล</title>
+  <meta name="description" content="ระบบลงข้อมูลเพื่อจัดทำหนังสือรุ่น หลักสูตร พจน.70 พื้นที่พุทธมณฑล">
 
-  <!-- ตัวอย่างลิงก์ (Preview) ตอนแชร์ใน LINE / Facebook / Messenger -->
+  <!-- Link preview สำหรับ LINE / Facebook / Messenger -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="ระบบบันทึกข้อมูลหนังสือรุ่น E-Book &quot;หลักสูตรพันจ่านักเรียน70&quot;">
-  <meta property="og:description" content="กรอกข้อมูลสำหรับจัดทำหนังสือรุ่น E-Book หลักสูตรพันจ่านักเรียน 70">
-  <!-- แก้เป็น URL ของคุณ แล้วอัปรูป cover.jpg (แนะนำขนาด 1200x630) ไว้ใน repo -->
+  <meta property="og:title" content="ระบบลงข้อมูลเพื่อจัดทำหนังสือรุ่น หลักสูตร พจน.70">
+  <meta property="og:description" content="พื้นที่พุทธมณฑล — กรอกข้อมูลเพื่อจัดทำหนังสือรุ่น">
+  <!-- แก้เป็น URL GitHub Pages ของคุณ และใส่รูปขนาด 1200x630 (ถ้ามี) -->
   <meta property="og:url" content="https://USERNAME.github.io/REPO/">
   <meta property="og:image" content="https://USERNAME.github.io/REPO/cover.jpg">
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231e3a8a'/><text x='50' y='66' font-size='46' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>70</text></svg>">
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
 
     html, body {
+      margin: 0;
+      padding: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden;              /* ไม่มี scrollbar ที่หน้าครอบ */
-      overscroll-behavior: none;     /* กันการเด้ง/ดึงรีเฟรชบนมือถือ */
-      background: #0b2a4a;
-      font-family: "Sarabun", "Noto Sans Thai", system-ui, -apple-system, sans-serif;
+      overflow: hidden;            /* ไม่มี scrollbar ชั้นนอก */
+      background: #ffffff;
+      overscroll-behavior: none;   /* กันเด้ง/ดึงรีเฟรชบนมือถือ */
     }
 
-    /* กล่องเต็มจอ ใช้ 100dvh กัน address bar มือถือบัง + เว้นพื้นที่ติ่ง/notch */
-    #wrap {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100vh;                 /* fallback เบราว์เซอร์เก่า */
-      height: var(--vh, 100dvh);
+    body {
+      height: 100vh;               /* fallback เบราว์เซอร์เก่า */
+      height: 100dvh;              /* กัน address bar มือถือบัง */
+      /* กันรอยบาก / Home indicator ของ iPhone */
       padding: env(safe-area-inset-top) env(safe-area-inset-right)
                env(safe-area-inset-bottom) env(safe-area-inset-left);
-      background: #ffffff;
     }
 
     #app {
       display: block;
       width: 100%;
       height: 100%;
-      border: 0;                     /* ไม่มีขอบ */
+      border: 0;
       margin: 0;
-      overflow: hidden;
+      padding: 0;
     }
 
-    /* ===== Loading Screen ===== */
+    /* ---------- Loading screen ---------- */
     #loader {
       position: fixed;
       inset: 0;
-      z-index: 10;
+      z-index: 9999;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -67,131 +64,115 @@
       padding: 24px;
       text-align: center;
       color: #fff;
-      background: linear-gradient(160deg, #0b2a4a 0%, #14457a 100%);
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      font-family: "Sarabun", "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
       transition: opacity .6s ease, visibility .6s ease;
     }
     #loader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
 
     .spinner {
       width: 56px; height: 56px;
-      border: 5px solid rgba(255,255,255,.25);
-      border-top-color: #f5c542;
+      border: 5px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .title { font-size: clamp(16px, 4.5vw, 22px); font-weight: 700; line-height: 1.5; }
-    .sub   { font-size: 14px; opacity: .8; }
+    .title { font-size: clamp(18px, 4.5vw, 24px); font-weight: 700; line-height: 1.5; max-width: 560px; }
+    .sub   { font-size: 15px; opacity: .85; }
 
-    #slow { display: none; flex-direction: column; gap: 10px; margin-top: 8px; font-size: 14px; }
-    #slow.show { display: flex; }
-    #slow button {
-      padding: 10px 18px;
-      font-size: 15px;
-      border: 0;
-      border-radius: 10px;
-      background: #f5c542;
-      color: #0b2a4a;
-      font-weight: 700;
-      cursor: pointer;
+    #slow { display: none; font-size: 14px; opacity: .95; }
+    #slow.show { display: block; }
+    #slow a {
+      display: inline-block; margin-top: 10px; padding: 10px 20px;
+      background: #fff; color: #1e3a8a; border-radius: 999px;
+      text-decoration: none; font-weight: 700;
     }
-    #slow button.ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.5); }
   </style>
 </head>
 <body>
 
   <div id="loader" role="status" aria-live="polite">
     <div class="spinner"></div>
-    <div class="title">ระบบบันทึกข้อมูลหนังสือรุ่น E-Book<br>&quot;หลักสูตรพันจ่านักเรียน70&quot;</div>
-    <div class="sub">กำลังโหลด กรุณารอสักครู่...</div>
+    <div class="title">ระบบลงข้อมูลเพื่อจัดทำหนังสือรุ่น<br>หลักสูตร พจน.70 พื้นที่พุทธมณฑล</div>
+    <div class="sub">กำลังโหลดระบบ กรุณารอสักครู่...</div>
     <div id="slow">
-      <span>การเชื่อมต่อช้ากว่าปกติ</span>
-      <button type="button" id="btnRetry">ลองโหลดใหม่</button>
-      <button type="button" id="btnDirect" class="ghost">เปิดระบบโดยตรง</button>
+      อินเทอร์เน็ตอาจช้า หากรอนานเกินไปกดปุ่มด้านล่าง<br>
+      <a id="directLink" href="#" target="_blank" rel="noopener">เปิดระบบโดยตรง</a>
     </div>
   </div>
 
-  <div id="wrap">
-    <iframe
-      id="app"
-      title="ระบบบันทึกข้อมูลหนังสือรุ่น E-Book"
-      allow="fullscreen; clipboard-read; clipboard-write"
-      allowfullscreen
-      scrolling="no"
-      frameborder="0"
-      referrerpolicy="no-referrer-when-downgrade"></iframe>
-  </div>
+  <iframe
+    id="app"
+    title="ระบบลงข้อมูลเพื่อจัดทำหนังสือรุ่น หลักสูตร พจน.70"
+    allow="fullscreen"
+    allowfullscreen
+    frameborder="0"
+    referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+  <noscript>
+    <p style="padding:20px;font-family:sans-serif">
+      กรุณาเปิดใช้งาน JavaScript หรือ
+      <a href="https://script.google.com/macros/s/AKfycbzlQ-zHlqyg5tWNVLo62YIsop9Lg-OKu3mqsYaiDM6I2pGRq-BwGjnycRcz3cLLFd4/exec">คลิกที่นี่เพื่อเปิดระบบ</a>
+    </p>
+  </noscript>
 
   <script>
-  (function () {
-    // ====== ตั้งค่า ======
-    var APP_URL = "https://script.google.com/macros/s/AKfycbyJKtOFlZF3Uxx7cEIhTWvNdcCHNVs0shwvKtoxywI58JY12XN16OISVQEmyltKNr4/exec";
-    var SLOW_MS = 15000;                 // ถ้าเกิน 15 วิ แสดงปุ่มช่วยเหลือ
-    var LINE_OPEN_EXTERNAL = false;      // true = ให้ LINE เด้งไปเปิดใน Chrome/Safari อัตโนมัติ
+    (function () {
+      // ================= ตั้งค่า =================
+      var APP_URL = "https://script.google.com/macros/s/AKfycbzlQ-zHlqyg5tWNVLo62YIsop9Lg-OKu3mqsYaiDM6I2pGRq-BwGjnycRcz3cLLFd4/exec";
 
-    var ua = navigator.userAgent || "";
-    var isLine = /\bLine\//i.test(ua);
+      // true = เมื่อเปิดใน LINE จะเด้งไปเปิดใน Safari/Chrome อัตโนมัติ
+      // (แนะนำให้เปิดเป็น true ถ้าผู้ใช้ต้องอัปโหลดรูปแล้วเจอปัญหาใน LINE)
+      var LINE_OPEN_EXTERNAL = false;
 
-    // (ทางเลือก) บังคับ LINE เปิดในเบราว์เซอร์ภายนอก โดยโดเมนยังเป็นของคุณ
-    if (LINE_OPEN_EXTERNAL && isLine && !/[?&]openExternalBrowser=1/.test(location.search)) {
-      var u = new URL(location.href);
-      u.searchParams.set("openExternalBrowser", "1");
-      location.replace(u.toString());
-      return;
-    }
+      var SLOW_HINT_MS  = 10000;  // แสดงปุ่มสำรองหลัง 10 วินาที
+      var MAX_LOADER_MS = 30000;  // ซ่อน loader แน่นอนหลัง 30 วินาที
+      // ===========================================
 
-    // Fallback 100dvh สำหรับเบราว์เซอร์เก่า / in-app browser รุ่นเก่า
-    function setVH() {
-      document.documentElement.style.setProperty("--vh", window.innerHeight + "px");
-    }
-    if (!(window.CSS && CSS.supports && CSS.supports("height", "100dvh"))) {
-      setVH();
-      window.addEventListener("resize", setVH);
-      window.addEventListener("orientationchange", setVH);
-    }
+      var ua = navigator.userAgent || "";
+      var params = new URLSearchParams(location.search);
 
-    // ส่งต่อ query string (เช่น ?id=123) ไปยัง Apps Script
-    var src = new URL(APP_URL);
-    new URLSearchParams(location.search).forEach(function (v, k) {
-      if (k !== "openExternalBrowser") src.searchParams.set(k, v);
-    });
-    var FINAL_URL = src.toString();
+      // LINE: เปิดด้วยเบราว์เซอร์ภายนอก (ยังคงเป็นโดเมนของคุณ)
+      if (LINE_OPEN_EXTERNAL && /\bLine\//i.test(ua) && !params.has("openExternalBrowser")) {
+        params.set("openExternalBrowser", "1");
+        location.replace(location.pathname + "?" + params.toString() + location.hash);
+        return;
+      }
 
-    var frame  = document.getElementById("app");
-    var loader = document.getElementById("loader");
-    var slow   = document.getElementById("slow");
-    var started = false, slowTimer = null;
+      // ส่ง query string ต่อให้ GAS (เช่น ?page=form) โดยตัดพารามิเตอร์ของ LINE ออก
+      params.delete("openExternalBrowser");
+      var qs = params.toString();
+      var finalUrl = APP_URL + (qs ? "?" + qs : "");
 
-    function hideLoader() {
-      clearTimeout(slowTimer);
-      loader.classList.add("hide");
-    }
+      var frame  = document.getElementById("app");
+      var loader = document.getElementById("loader");
+      var slow   = document.getElementById("slow");
+      document.getElementById("directLink").href = finalUrl;
 
-    function load() {
-      started = true;
-      loader.classList.remove("hide");
-      slow.classList.remove("show");
-      clearTimeout(slowTimer);
-      slowTimer = setTimeout(function () { slow.classList.add("show"); }, SLOW_MS);
-      frame.src = FINAL_URL;
-    }
+      var hidden = false;
+      function hideLoader() {
+        if (hidden) return;
+        hidden = true;
+        loader.classList.add("hide");
+        setTimeout(function () { if (loader.parentNode) loader.parentNode.removeChild(loader); }, 700);
+      }
 
-    frame.addEventListener("load", function () {
-      if (!started) return;              // ข้าม load ของ about:blank ตอนเริ่ม
-      setTimeout(hideLoader, 300);       // หน่วงนิดให้ fade สวย
-    });
+      frame.addEventListener("load", hideLoader);
+      frame.src = finalUrl;   // ผูก event ก่อนแล้วค่อยใส่ src
 
-    document.getElementById("btnRetry").addEventListener("click", function () {
-      frame.src = "about:blank";
-      setTimeout(load, 100);
-    });
-    document.getElementById("btnDirect").addEventListener("click", function () {
-      window.location.href = FINAL_URL;  // ใช้เฉพาะกรณีฉุกเฉินเท่านั้น
-    });
+      setTimeout(function () { if (!hidden) slow.classList.add("show"); }, SLOW_HINT_MS);
+      setTimeout(hideLoader, MAX_LOADER_MS);
 
-    load();
-  })();
+      // fallback สำหรับ WebView รุ่นเก่าที่ไม่รู้จัก dvh
+      if (!(window.CSS && CSS.supports && CSS.supports("height", "100dvh"))) {
+        var setH = function () { document.body.style.height = window.innerHeight + "px"; };
+        setH();
+        window.addEventListener("resize", setH);
+        window.addEventListener("orientationchange", setH);
+      }
+    })();
   </script>
 </body>
 </html>
